@@ -1,6 +1,5 @@
 package com.ipiecoles.java.java230;
 
-import antlr.StringUtils;
 import com.ipiecoles.java.java230.exceptions.BatchException;
 import com.ipiecoles.java.java230.model.Commercial;
 import com.ipiecoles.java.java230.model.Employe;
@@ -8,10 +7,7 @@ import com.ipiecoles.java.java230.model.Manager;
 import com.ipiecoles.java.java230.model.Technicien;
 import com.ipiecoles.java.java230.repository.EmployeRepository;
 import com.ipiecoles.java.java230.repository.ManagerRepository;
-import com.ipiecoles.java.java230.service.EmployeService;
-import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
-import org.omg.CORBA.MARSHAL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +40,9 @@ public class MyRunner implements CommandLineRunner {
     @Autowired
     private ManagerRepository managerRepository;
 
+    /**
+     * Liste qui contient les infos (valides des employés) extraites du fichier csv
+     */
     private List<Employe> employes = new ArrayList<>();
 
     /**
@@ -157,10 +156,10 @@ public class MyRunner implements CommandLineRunner {
         String[] employeFields = ligneCommercial.split(","); // on met le contenu de la ligne dans un tableau chaque fois qu'on a une virgule
 
         if (erreurNbChamps(ligneCommercial) == 0 && erreurMatricule(ligneCommercial) == 0
-        && erreurFormatDate(ligneCommercial) == 0 && erreurSalaire(ligneCommercial) == 0
-        && erreurChiffreAffaires(ligneCommercial) == 0 && erreurPerformance(ligneCommercial) == 0) { // si on n'a pas d'erreur
+                && erreurFormatDate(ligneCommercial) == 0 && erreurSalaire(ligneCommercial) == 0
+                && erreurChiffreAffaires(ligneCommercial) == 0 && erreurPerformance(ligneCommercial) == 0) { // si on n'a pas d'erreur
             Commercial c = new Commercial();
-            ajouterEmploye(c, employeFields[1], employeFields[2], employeFields[0], employeFields[3], employeFields[4]); // on crée un employé de type commercial
+            ajouterEmploye(c, employeFields[1], employeFields[2], employeFields[0], employeFields[3], employeFields[4]); // on crée un employé de type Commercial
             c.setCaAnnuel(Double.parseDouble(employeFields[5])); // on lui affecte un CA annuel
             c.setPerformance(Integer.parseInt(employeFields[6])); // on lui affecte aussi une performance
             employes.add(c); // on ajoute le commercial à la liste d'employés
@@ -180,9 +179,9 @@ public class MyRunner implements CommandLineRunner {
         String[] employeFields = ligneManager.split(","); // on met le contenu de la ligne dans un tableau chaque fois qu'on a une virgule
 
         if (erreurNbChamps(ligneManager) == 0 && erreurMatricule(ligneManager) == 0
-        && erreurFormatDate(ligneManager) == 0 && erreurSalaire(ligneManager) == 0) { // si on n'a pas d'erreur
+                && erreurFormatDate(ligneManager) == 0 && erreurSalaire(ligneManager) == 0) { // si on n'a pas d'erreur
             Manager m = new Manager();
-            ajouterEmploye(m, employeFields[1], employeFields[2], employeFields[0], employeFields[3], employeFields[4]); // on crée un employé de type manager
+            ajouterEmploye(m, employeFields[1], employeFields[2], employeFields[0], employeFields[3], employeFields[4]); // on crée un employé de type Manager
             m.setEquipe(null);
             employes.add(m); // on ajoute le manager à la liste d'employés
             employeRepository.save(m); // on enregistre l'instanciation du manager dans la base de données
@@ -201,18 +200,16 @@ public class MyRunner implements CommandLineRunner {
         String[] employeFields = ligneTechnicien.split(","); // on met le contenu de la ligne dans un tableau chaque fois qu'on a une virgule
 
         if (erreurNbChamps(ligneTechnicien) == 0 && erreurMatricule(ligneTechnicien) == 0
-        && erreurFormatDate(ligneTechnicien) == 0 && erreurSalaire(ligneTechnicien) == 0
-        && erreurGrade(ligneTechnicien) == 0 && erreurMatriculeManager(ligneTechnicien) == 0
-        && matriculeManagerIntrouvable(ligneTechnicien) == 0) { // si on n'a pas d'erreur
+                && erreurFormatDate(ligneTechnicien) == 0 && erreurSalaire(ligneTechnicien) == 0
+                && erreurGrade(ligneTechnicien) == 0 && erreurMatriculeManager(ligneTechnicien) == 0
+                && matriculeManagerIntrouvable(ligneTechnicien) == 0) { // si on n'a pas d'erreur
             Technicien t = new Technicien();
             Manager manager = managerRepository.findByMatricule(employeFields[6]); // on recherche le matricule du manager dans la base de données
-//            if (manager.getId() > 0) { // si le technicien a un manager qui existe dans la base de données
-                t.setGrade(Integer.parseInt(employeFields[5])); // le grade étant utilisé pour le calcul du salaire, il doit être créé avant le salaire
-                ajouterEmploye(t, employeFields[1], employeFields[2], employeFields[0], employeFields[3], employeFields[4]); // on crée un employé de type technicien
-                t.setManager(manager); // on lui affecte un manager
-                employes.add(t); // on ajoute le technicien à la liste d'employés
-                employeRepository.save(t); // on enregistre l'instanciation du technicien dans la base de données
-//            }
+            t.setGrade(Integer.parseInt(employeFields[5])); // le grade étant utilisé pour le calcul du salaire, il doit être créé avant le salaire
+            ajouterEmploye(t, employeFields[1], employeFields[2], employeFields[0], employeFields[3], employeFields[4]); // on crée un employé de type Technicien
+            t.setManager(manager); // on lui affecte un manager
+            employes.add(t); // on ajoute le technicien à la liste d'employés
+            employeRepository.save(t); // on enregistre l'instanciation du technicien dans la base de données
         }
 
     }
@@ -220,12 +217,12 @@ public class MyRunner implements CommandLineRunner {
     /**
      * Méthode qui permet de créer un employé
      *
-     * @param employe : il s'agit d'un manager, d'un commercial ou d'un technicien
-     * @param nom :
-     * @param prenom :
-     * @param matricule :
+     * @param employe      : il s'agit d'un manager, d'un commercial ou d'un technicien
+     * @param nom          :
+     * @param prenom       :
+     * @param matricule    :
      * @param dateEmbauche :
-     * @param salaire :
+     * @param salaire      :
      */
     private void ajouterEmploye(Employe employe, String nom, String prenom, String matricule, String dateEmbauche, String salaire) {
 
@@ -307,8 +304,8 @@ public class MyRunner implements CommandLineRunner {
         }
 
         if ((Integer.parseInt(dateEmbauche[0]) < 1 || Integer.parseInt(dateEmbauche[0]) > 31)
-        || (Integer.parseInt(dateEmbauche[1]) < 1 || Integer.parseInt(dateEmbauche[1]) > 12)
-        || (Integer.parseInt(dateEmbauche[2]) < 1900)) { // on contrôle le jour, le mois et l'année
+                || (Integer.parseInt(dateEmbauche[1]) < 1 || Integer.parseInt(dateEmbauche[1]) > 12)
+                || (Integer.parseInt(dateEmbauche[2]) < 1900)) { // on contrôle le jour, le mois et l'année
             throw new BatchException(employeFields[3] + " ne respecte pas le format de date dd/MM/yyyy"); // message d'erreur
         }
 
@@ -374,7 +371,7 @@ public class MyRunner implements CommandLineRunner {
      *
      * @param ligneEmploye : c'est la ligne en cours du fichier csv
      * @return 0 s'il n'y a pas d'erreur
-     * @throws BatchException si le chiffre d'affaires du commercial est incorrecte
+     * @throws BatchException si le chiffre d'affaires du commercial est incorrect
      */
     private Integer erreurChiffreAffaires(String ligneEmploye) throws BatchException {
 
@@ -474,7 +471,6 @@ public class MyRunner implements CommandLineRunner {
         managerFichier = trouverManagerFichier(ligneEmploye, listeManagers);
 
         if (!managerFichier) { // si on ne trouve pas le manager dans le fichier
-//            employeRepository.findByMatricule(employeFields[6]);
             try {
                 employeRepository.findByMatricule(employeFields[6])/*.toString()*/;
             } catch (NullPointerException e) {
@@ -490,7 +486,7 @@ public class MyRunner implements CommandLineRunner {
      * Méthode qui permet de trouver le manager d'un technicien
      *
      * @param ligneEmploye : c'est la ligne en cours du fichier csv
-     * @param liste : c'est la liste qui contient les matricules des managers
+     * @param liste        : c'est la liste qui contient les matricules des managers
      * @return vrai si le manager du technicien est trouvé
      */
     private Boolean trouverManagerFichier(String ligneEmploye, List<String> liste) {
